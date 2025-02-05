@@ -1,0 +1,24 @@
+{
+  "name": "TeraBox Link Bypass Telegram Bot",
+  "description": "A Telegram bot that can bypass TeraBox Links",
+  "repository": "https://github.com/Keyz400/spytera",
+  "stack": "container",
+  "env": {
+    "BOT_TOKEN": {
+      "description": "Your Telegram bot token",
+      "required": false
+    },
+    "API_ID": {
+      "description": "Your Pyrogram API ID",
+      "required": false
+    },
+    "API_HASH": {
+      "description": "Your Pyrogram API Hash",
+      "required": false
+    },
+    "MONGO_URI": {
+      "description": "MongoDB connection string",
+      "required": false
+    }
+  }
+}
