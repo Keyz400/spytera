@@ -15,6 +15,7 @@ import requests
 import pyfiglet
 from termcolor import cprint
 import sys
+import os  # Added import for environment variables
 
 # Bot details
 BOT_TOKEN = '6479322823:AAFTzuzIsoYUPH8wdL6sHsePM6JQv2kTxOo'
@@ -226,7 +227,9 @@ def home():
     return f"Bot uptime: {uptime_minutes:.2f} minutes\nUnique users: {user_count}"
 
 def run_flask():
-    flask_app.run(host='0.0.0.0', port=8080)
+    # Get port from environment variable or default to 8080
+    port = int(os.environ.get("PORT", 8080))
+    flask_app.run(host='0.0.0.0', port=port)
 
 if __name__ == "__main__":
     Thread(target=run_flask).start()
