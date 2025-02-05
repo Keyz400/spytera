@@ -1,0 +1,8 @@
+pyrogram
+httpx
+beautifulsoup4
+flask
+pymongo
+requests
+pyfiglet
+termcolor
