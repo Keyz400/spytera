@@ -36,7 +36,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean
 
-# Install Playwright browsers
+# Install Playwright and Chromium
 RUN npm install -g playwright \
     && playwright install chromium \
     && playwright install-deps
@@ -52,9 +52,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
 COPY . .
-
-# Expose the port (if needed, though Heroku dynamically assigns ports)
-EXPOSE 5000
 
 # Run the bot
 CMD ["python", "spytera.py"]
