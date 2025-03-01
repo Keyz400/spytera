@@ -12,10 +12,6 @@ from bs4 import BeautifulSoup
 import pymongo
 from typing import Optional
 
-# Install Playwright browsers if running on Heroku
-if "DYNO" in os.environ:
-    os.system("playwright install")
-
 # Telegram API credentials
 API_ID = 20760512
 API_HASH = "04c316c7a167cfede7256ca9c57462ab"
