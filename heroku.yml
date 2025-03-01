@@ -1,11 +1,9 @@
 build:
   docker:
-    worker:
-      dockerfile: Dockerfile
+    web: Dockerfile
+  config:
+    NODE_ENV: production
+    PYTHONUNBUFFERED: 1
 
 run:
-  worker:
-    command:
-      - python3
-      - spytera.py
-    image: worker
+  web: python bot.py
