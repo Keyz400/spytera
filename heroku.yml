@@ -6,4 +6,4 @@ build:
     PYTHONUNBUFFERED: 1
 
 run:
-  web: python bot.py
+  web: python spytera.py
