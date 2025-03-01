@@ -1,1 +1,1 @@
-worker: python spytera.py
+worker: python3 spytera.py
