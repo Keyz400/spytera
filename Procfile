@@ -1,1 +1,1 @@
-worker: python spytera.py
+web: python3 spytera.py
