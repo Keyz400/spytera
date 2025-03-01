@@ -1,28 +1,60 @@
-# Use Ubuntu as the base image (Heroku uses Debian by default)
-FROM ubuntu:20.04
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
 
-# Set non-interactive mode to prevent installation issues
-ENV DEBIAN_FRONTEND=noninteractive
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
 
 # Install system dependencies
-RUN apt update && apt install -y wget curl unzip software-properties-common \
-    && apt install -y nodejs npm python3 python3-pip git \
-    && apt clean
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg \
+    wget \
+    unzip \
+    && apt-get clean
 
-# Install Playwright and required browsers
-RUN pip3 install --no-cache-dir playwright pyrogram requests bs4 pymongo aiohttp \
-    && playwright install \
+# Install Playwright dependencies
+RUN apt-get update && apt-get install -y \
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
+    libatspi2.0-0 \
+    libxshmfence1 \
+    && apt-get clean
+
+# Install Node.js (required for Playwright)
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean
+
+# Install Playwright browsers
+RUN npm install -g playwright \
+    && playwright install chromium \
     && playwright install-deps
 
-# Set working directory
+# Set the working directory
 WORKDIR /app
 
-# Copy bot files
+# Copy the requirements file into the container
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code
 COPY . .
 
-# Expose port (Heroku dynamically assigns a port)
-ENV PORT=8080
-EXPOSE 8080
+# Expose the port (if needed, though Heroku dynamically assigns ports)
+EXPOSE 5000
 
-# Run bot script
-CMD ["python3", "spytera.py"]
+# Run the bot
+CMD ["python", "spytera.py"]
