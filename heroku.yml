@@ -1,5 +1,10 @@
 build:
   docker:
-    web: Dockerfile
+    worker: Dockerfile
+
 run:
-  worker: python3 spytera.py
+  worker:
+    image: worker
+    command:
+      - python3
+      - spytera.py
