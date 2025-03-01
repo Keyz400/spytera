@@ -2,4 +2,4 @@ build:
   docker:
     web: Dockerfile
 run:
-  web: python spytera.py
+  worker: python3 spytera.py
