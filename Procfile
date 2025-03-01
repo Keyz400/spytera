@@ -1,1 +1,1 @@
-worker: python3 spytera.py
+worker: python bot.py
