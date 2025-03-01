@@ -1,10 +1,11 @@
 build:
   docker:
-    worker: Dockerfile
+    worker:
+      dockerfile: Dockerfile
 
 run:
   worker:
-    image: web
     command:
       - python3
       - spytera.py
+    image: worker
