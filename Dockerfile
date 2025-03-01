@@ -1,21 +1,25 @@
-# Use official Python image
 FROM python:3.10
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-
-# Set the working directory
+Set the working directory in the container
 WORKDIR /app
 
-# Copy requirements and install dependencies
+Copy the requirements file
 COPY requirements.txt .
+
+Install the dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the bot files into the container
+Install Playwright browser binaries
+RUN playwright install chrome
+
+Copy the application code
 COPY . .
 
-# Expose Flask port (Heroku uses this)
-EXPOSE 8080
+Make port 80 available to the world outside this container
+EXPOSE 80
 
-# Run the bot
+Define environment variable
+ENV PYTHONUNBUFFERED=1
+
+Run app.py when the container launches
 CMD ["python", "spytera.py"]
