@@ -1,26 +1,28 @@
-# Use an official Python runtime as a parent image
-FROM python:3.10
+# Use Ubuntu as the base image (Heroku uses Debian by default)
+FROM ubuntu:20.04
 
-# Set the working directory in the container
+# Set non-interactive mode to prevent installation issues
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt update && apt install -y wget curl unzip software-properties-common \
+    && apt install -y nodejs npm python3 python3-pip git \
+    && apt clean
+
+# Install Playwright and required browsers
+RUN pip3 install --no-cache-dir playwright pyrogram requests bs4 pymongo aiohttp \
+    && playwright install \
+    && playwright install-deps
+
+# Set working directory
 WORKDIR /app
 
-# Copy the requirements file
-COPY requirements.txt .
-
-# Install the dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Install Playwright browser binaries
-RUN playwright install chrome
-
-# Copy the application code
+# Copy bot files
 COPY . .
 
-# Make port 80 available to the world outside this container
-EXPOSE 80
+# Expose port (Heroku dynamically assigns a port)
+ENV PORT=8080
+EXPOSE 8080
 
-# Define environment variable
-ENV PYTHONUNBUFFERED=1
-
-# Run spytera.py when the container launches
-CMD ["python", "spytera.py"]
+# Run bot script
+CMD ["python3", "spytera.py"]
