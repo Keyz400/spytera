@@ -25,4 +25,4 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Run bot script
-CMD ["python3", "spytera.py"]
+CMD ["python", "spytera.py"]
