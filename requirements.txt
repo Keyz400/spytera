@@ -1,3 +1,4 @@
+Tgcrypto
 pyrogram
 aiohttp
 requests
