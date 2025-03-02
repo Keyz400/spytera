@@ -44,6 +44,9 @@ RUN npm install -g playwright \
     #Playwright install
 RUN playwright install    
 
+    #Install Chrome
+RUN python -m playwright install chrome    
+
 # Set the working directory
 WORKDIR /app
 
