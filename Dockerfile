@@ -41,6 +41,9 @@ RUN npm install -g playwright \
     && playwright install chromium \
     && playwright install-deps
 
+    #Playwright install
+RUN playwright install    
+
 # Set the working directory
 WORKDIR /app
 
