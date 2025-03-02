@@ -3,4 +3,4 @@ aiohttp
 requests
 beautifulsoup4
 pymongo
-playwright
+playwright install
