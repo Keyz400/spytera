@@ -1,6 +1,9 @@
 import os
+import time
+import re
 import asyncio
-from urllib.parse import quote
+import aiohttp
+from urllib.parse import unquote, quote
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from playwright.sync_api import sync_playwright
@@ -9,56 +12,54 @@ from bs4 import BeautifulSoup
 import pymongo
 from typing import Optional
 
-# Load environment variables
-API_ID = int(os.getenv("API_ID", 20760512))
-API_HASH = os.getenv("API_HASH", "04c316c7a167cfede7256ca9c57462ab")
-BOT_TOKEN = os.getenv("BOT_TOKEN", "8072718373:AAHNmzjoV2qXUypXbvhccIE6bQNRmAQEn58")
-CHANNEL_USERNAME = os.getenv("CHANNEL_USERNAME", "lox_bots")
-DUMP_CHANNEL = int(os.getenv("DUMP_CHANNEL", -1001824360922))
-OWNER_ID = int(os.getenv("OWNER_ID", 1318663278))
+# Telegram API credentials
+API_ID = 20760512
+API_HASH = "04c316c7a167cfede7256ca9c57462ab"
+BOT_TOKEN = "8072718373:AAHNmzjoV2qXUypXbvhccIE6bQNRmAQEn58"
+CHANNEL_USERNAME = "lox_bots"
+DUMP_CHANNEL = -1001824360922
+OWNER_ID = 1318663278
 
 # MongoDB setup
-MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://mrdeepakushwaha:lOMs3uDmCxgNFYNP@cluster0.376zvxq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
-mongo_client = pymongo.MongoClient(MONGO_URI)
+mongo_client = pymongo.MongoClient(
+    'mongodb+srv://mrdeepakushwaha:lOMs3uDmCxgNFYNP@cluster0.376zvxq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
+)
 db = mongo_client['Rishu-free-db']
 users_collection = db['users']
 
-# Initialize Pyrogram client
 app = Client("terabox_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 def extract_terabox_m3u8(api_url):
     """Extract m3u8 URL with enhanced parameter validation."""
     direct_url = None
-    try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(
-                headless=True,  # Run in headless mode
-                args=[
-                    '--disable-blink-features=AutomationControlled',
-                    '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    '--remote-allow-origins=*'
+    with sync_playwright() as p:
+        browser = p.chromium.launch(
+            headless=True,
+            channel="chrome",
+            args=[
+                '--disable-blink-features=AutomationControlled',
+                '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                '--remote-allow-origins=*'
+            ]
+        )
+        context = browser.new_context(
+            ignore_https_errors=True,
+            storage_state={
+                'cookies': [
+                    {'name': 'PANWEB', 'value': '1', 'domain': '.terabox.com', 'path': '/'},
+                    {'name': 'ndut_fmt', 'value': 'FFFFFFFF', 'domain': '.terabox.com', 'path': '/'}
                 ]
-            )
-            context = browser.new_context(
-                ignore_https_errors=True,
-                storage_state={
-                    'cookies': [
-                        {'name': 'PANWEB', 'value': '1', 'domain': '.terabox.com', 'path': '/'},
-                        {'name': 'ndut_fmt', 'value': 'FFFFFFFF', 'domain': '.terabox.com', 'path': '/'}
-                    ]
-                }
-            )
-            page = context.new_page()
-            def handle_request(request):
-                nonlocal direct_url
-                raw_url = request.url
-                if "extstreaming.m3u8" in raw_url:
-                    direct_url = raw_url
-            page.on("request", handle_request)
-            page.goto(api_url, wait_until="networkidle", timeout=60000)
-            browser.close()
-    except Exception as e:
-        print(f"Error in extract_terabox_m3u8: {e}")
+            }
+        )
+        page = context.new_page()
+        def handle_request(request):
+            nonlocal direct_url
+            raw_url = request.url
+            if "extstreaming.m3u8" in raw_url:
+                direct_url = raw_url
+        page.on("request", handle_request)
+        page.goto(api_url, wait_until="networkidle", timeout=60000)
+        browser.close()
     return direct_url
 
 def ensure_valid_params(url):
@@ -82,9 +83,8 @@ def fetch_video_details(video_url: str) -> Optional[str]:
             soup = BeautifulSoup(response.text, 'html.parser')
             meta = soup.find("meta", property="og:image")
             return meta["content"] if meta and meta.has_attr("content") else "https://envs.sh/L75.jpg"
-    except Exception as e:
-        print(f"Error in fetch_video_details: {e}")
-    return "https://envs.sh/L75.jpg"
+    except:
+        return "https://envs.sh/L75.jpg"
 
 def shorten_link(url: str) -> str:
     """Shorten URL using TinyURL."""
@@ -92,18 +92,16 @@ def shorten_link(url: str) -> str:
         tinyurl_api = f"https://tinyurl.com/api-create.php?url={quote(url, safe=':/?&=')}"
         response = requests.get(tinyurl_api, timeout=10)
         return response.text.strip() if response.status_code == 200 else url
-    except Exception as e:
-        print(f"Error in shorten_link: {e}")
-    return url
+    except:
+        return url
 
 async def is_user_in_channel(client, user_id):
     """Check if user is in required channel."""
     try:
         await client.get_chat_member(CHANNEL_USERNAME, user_id)
         return True
-    except Exception as e:
-        print(f"Error in is_user_in_channel: {e}")
-    return False
+    except:
+        return False
 
 @app.on_message(filters.command("start"))
 async def start_handler(client, message):
@@ -126,8 +124,8 @@ async def broadcast_handler(client, message):
         try:
             await client.send_message(user["user_id"], broadcast_text)
             success += 1
-        except Exception as e:
-            print(f"Error sending message to user {user['user_id']}: {e}")
+        except:
+            continue
     await message.reply_text(f"Broadcast sent to {success} users")
 
 @app.on_message(filters.command("status") & filters.user(OWNER_ID))
